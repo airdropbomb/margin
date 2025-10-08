@@ -8,7 +8,7 @@ api_secret = 'YOUR_API_SECRET_HERE'
 symbol = 'BTCUSDT'
 usdt_amount = 0.0104  # USDT ပမာဏ
 loops = 80  # အကြိမ်ရေ
-sleep_time = 10  # စက္ကန့်စောင့်ချိန်
+sleep_time = 20  # စက္ကန့်စောင့်ချိန်
 
 # Binance Client (Testnet အတွက် testnet=True ထည့်ပါ)
 client = Client(api_key, api_secret)  # Testnet: client = Client(api_key, api_secret, testnet=True)
@@ -89,24 +89,23 @@ def close_position():
         print(f"Close order error: {e}")
         return False
 
-# Main Loop
-for i in range(loops):
-    print(f"\n--- Loop {i+1}/{loops} ---")
-    
-    # Step 1: Spot to Isolated Margin Transfer
-    if not transfer_to_isolated_margin():
-        print("Transfer မအောင်မြင်ပါ၊ loop ရပ်ပါမယ်")
-        break
-    
-    # Step 2: Open Position
-    if open_position():
-        time.sleep(2)  # Order ပြီးဆုံးဖို့ စောင့်ပါ
+# Step 1: Spot to Isolated Margin Transfer (တစ်ကြိမ်တည်း)
+if not transfer_to_isolated_margin():
+    print("Transfer မအောင်မြင်ပါ၊ ရပ်လိုက်ပါမယ်")
+else:
+    # Step 2: Main Loop for Open and Close
+    for i in range(loops):
+        print(f"\n--- Loop {i+1}/{loops} ---")
         
-        # Step 3: Close Position (BTC Settle)
-        close_position()
-    
-    if i < loops - 1:
-        print(f"{sleep_time} စက္ကန့် စောင့်ပါမယ်...")
-        time.sleep(sleep_time)
+        # Open Position
+        if open_position():
+            time.sleep(2)  # Order ပြီးဆုံးဖို့ စောင့်ပါ
+            
+            # Close Position (BTC Settle)
+            close_position()
+        
+        if i < loops - 1:
+            print(f"{sleep_time} စက္ကန့် စောင့်ပါမယ်...")
+            time.sleep(sleep_time)
 
 print("အားလုံး ပြီးဆုံးပါပြီ!")
